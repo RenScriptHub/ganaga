@@ -1,7 +1,7 @@
 --[[
-🌈 Stylish Egg GUI
-Made by: RenScriptHub
-Supports: ESP with pet name + rarity, reroll system
+🌈 Egg Randomizer GUI
+By: RenScriptHub
+Includes: ESP, Auto Reroll, Pet Tracking
 ]]
 
 local Players = game:GetService("Players")
@@ -64,7 +64,7 @@ layout.SortOrder = Enum.SortOrder.LayoutOrder
 layout.FillDirection = Enum.FillDirection.Vertical
 title.LayoutOrder = 0
 
--- === Button Maker
+-- === Helper: Button Maker
 local function makeBtn(text, color, callback)
 	local btn = Instance.new("TextButton", frame)
 	btn.Size = UDim2.new(1, -20, 0, 45)
@@ -76,11 +76,13 @@ local function makeBtn(text, color, callback)
 	btn.TextColor3 = Color3.new(1, 1, 1)
 	btn.AutoButtonColor = true
 	Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
-	btn.MouseButton1Click:Connect(callback)
+	btn.MouseButton1Click:Connect(function()
+		callback(btn)
+	end)
 	return btn
 end
 
--- === 🐣 Hatch Random Pets (sets CurrentPet)
+-- === Logic: Roll Pet
 local function rollPet(egg)
 	local list = eggPools[egg.Name]
 	if not list then return end
@@ -90,6 +92,7 @@ local function rollPet(egg)
 	value.Value = pet
 end
 
+-- === 🐣 Hatch All
 makeBtn("🐣 Hatch Random Pets", Color3.fromRGB(255, 0, 150), function()
 	for _, egg in ipairs(Workspace:GetDescendants()) do
 		if egg:IsA("Model") and eggPools[egg.Name] then
@@ -98,7 +101,7 @@ makeBtn("🐣 Hatch Random Pets", Color3.fromRGB(255, 0, 150), function()
 	end
 end)
 
--- === 🔘 ESP Toggle (show pet + rarity)
+-- === 🔘 ESP Toggle
 local espEnabled = false
 local function toggleESP(state)
 	for _, egg in ipairs(Workspace:GetDescendants()) do
@@ -139,18 +142,17 @@ local function toggleESP(state)
 	end
 end
 
-local espBtn
-espBtn = makeBtn("⚪ ESP: OFF", Color3.fromRGB(60, 60, 60), function()
+makeBtn("⚪ ESP: OFF", Color3.fromRGB(60, 60, 60), function(btn)
 	espEnabled = not espEnabled
-	espBtn.Text = espEnabled and "🔵 ESP: ON" or "⚪ ESP: OFF"
+	btn.Text = espEnabled and "🔵 ESP: ON" or "⚪ ESP: OFF"
 	toggleESP(espEnabled)
 end)
 
--- === 🔄 Auto Randomize
+-- === 🔄 Auto Reroll (Fixed!)
 local autoEnabled = false
-local autoBtn = makeBtn("🔄 Auto Randomize: OFF", Color3.fromRGB(50, 200, 100), function()
+makeBtn("🔄 Auto Randomize: OFF", Color3.fromRGB(50, 200, 100), function(btn)
 	autoEnabled = not autoEnabled
-	autoBtn.Text = autoEnabled and "🔁 Auto Randomize: ON" or "🔄 Auto Randomize: OFF"
+	btn.Text = autoEnabled and "🔁 Auto Randomize: ON" or "🔄 Auto Randomize: OFF"
 end)
 
 task.spawn(function()
@@ -161,17 +163,18 @@ task.spawn(function()
 					rollPet(egg)
 				end
 			end
+			if espEnabled then toggleESP(true) end
 		end
 		task.wait(5)
 	end
 end)
 
--- === 🧠 Load Pet Age Script
+-- === 🐾 Load Pet Age Script
 makeBtn("🐾 Load Pet Age 50 Script", Color3.fromRGB(30, 30, 70), function()
 	loadstring(game:HttpGet("https://pastebin.com/raw/YOUR_SCRIPT_ID"))()
 end)
 
--- === 💀 Mutation Finder (demo)
+-- === 💀 Mutation Finder
 makeBtn("💀 Pet Mutation Finder", Color3.fromRGB(255, 180, 200), function()
 	print("🧬 Mutation finder activated (placeholder)")
 end)
