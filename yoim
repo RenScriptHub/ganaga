@@ -1,147 +1,182 @@
+--[[
+🌈 Stylish Egg GUI
+Inspired by: Munkizzz layout
+Made by: RenScriptHub
+]]
+
 local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
--- === Egg + Pet Pools ===
+-- === Egg Pools
 local eggPools = {
-    ["Bug Egg"] = {"Snail", "Caterpillar", "Giant Ant"},
-    ["Night Egg"] = {"Hedgehog", "Frog", "Echo Frog", "Blood Hedgehog", "Blood Kiwi"},
-    ["Mythical Egg"] = {"Squirrel", "Red Giant Ant", "Grey Mouse", "Brown Mouse"},
-    ["Paradise Egg"] = {"Ostrich", "Peacock", "Capybara", "Mimic Octopus"},
-    ["Oasis Egg"] = {"Meerkat", "Sandsnake", "Oxolotl"},
-    ["Primal Egg"] = {"Brontosaurus", "Spinosaurus", "Pterodactyl", "Raptor"},
-    ["Dinosaur Egg"] = {"Brontosaurus", "Raptor", "Pterodactyl"}
+	["Common Egg"] = {"Bunny", "Chick", "Mouse"},
+	["Bug Egg"] = {"Snail", "Caterpillar", "Giant Ant"},
+	["Night Egg"] = {"Hedgehog", "Frog", "Echo Frog", "Blood Hedgehog", "Blood Kiwi"},
+	["Mythical Egg"] = {"Squirrel", "Red Giant Ant", "Grey Mouse", "Brown Mouse"},
+	["Paradise Egg"] = {"Ostrich", "Peacock", "Capybara", "Mimic Octopus"},
+	["Oasis Egg"] = {"Meerkat", "Sandsnake", "Oxolotl"},
+	["Primal Egg"] = {"Brontosaurus", "Spinosaurus", "Pterodactyl", "Raptor"},
+	["Dinosaur Egg"] = {"Brontosaurus", "Raptor", "Pterodactyl"}
 }
 
--- === Main GUI ===
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "RenScriptHub"
-screenGui.ResetOnSpawn = false
-screenGui.Parent = playerGui
+-- === Pet Rarity
+local petRarity = {
+	-- Common
+	["Bunny"] = "Common", ["Chick"] = "Common", ["Mouse"] = "Common",
+	["Snail"] = "Common", ["Caterpillar"] = "Common", ["Frog"] = "Common",
 
--- 🌌 Background Image
-local bg = Instance.new("ImageLabel")
-bg.Size = UDim2.new(1, 0, 1, 0)
-bg.BackgroundTransparency = 1
-bg.Image = "rbxassetid://13139558070" -- Galaxy background
-bg.ImageTransparency = 0.2
-bg.ZIndex = 0
-bg.Parent = screenGui
+	-- Rare
+	["Giant Ant"] = "Rare", ["Hedgehog"] = "Rare", ["Grey Mouse"] = "Rare",
+	["Peacock"] = "Rare", ["Meerkat"] = "Rare",
 
--- 📦 Main Frame
-local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 360, 0, 340)
-mainFrame.Position = UDim2.new(0.5, -180, 0.5, -170)
-mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 40)
-mainFrame.BackgroundTransparency = 0.1
-mainFrame.BorderSizePixel = 0
-mainFrame.ZIndex = 1
-mainFrame.Parent = screenGui
-Instance.new("UICorner", mainFrame).CornerRadius = UDim.new(0, 10)
+	-- Epic
+	["Echo Frog"] = "Epic", ["Blood Hedgehog"] = "Epic", ["Mimic Octopus"] = "Epic",
+	["Sandsnake"] = "Epic", ["Spinosaurus"] = "Epic",
 
--- 🧾 Title
-local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, 0, 0, 30)
-title.BackgroundTransparency = 1
-title.Text = "🌌 Egg Randomizer"
-title.TextColor3 = Color3.fromRGB(170, 200, 255)
+	-- Legendary
+	["Blood Kiwi"] = "Legendary", ["Red Giant Ant"] = "Legendary",
+	["Brontosaurus"] = "Legendary", ["Pterodactyl"] = "Legendary", ["Raptor"] = "Legendary"
+}
+
+local eggNames = {} for name in pairs(eggPools) do table.insert(eggNames, name) end
+
+-- === GUI Setup
+local gui = Instance.new("ScreenGui", playerGui)
+gui.Name = "RenEggGUI"
+gui.ResetOnSpawn = false
+
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0, 250, 0, 360)
+frame.Position = UDim2.new(0, 20, 0.25, 0)
+frame.BackgroundColor3 = Color3.fromRGB(30, 0, 40)
+frame.BorderSizePixel = 0
+frame.Active = true
+frame.Draggable = true
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10)
+
+local title = Instance.new("TextLabel", frame)
+title.Size = UDim2.new(1, 0, 0, 40)
+title.Text = "😈 Egg Randomizer\nMade by RenScriptHub"
 title.Font = Enum.Font.GothamBold
-title.TextSize = 20
-title.ZIndex = 2
-title.Parent = mainFrame
+title.TextSize = 16
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.TextWrapped = true
+title.BackgroundTransparency = 1
 
--- 🧪 Output Box
-local outputBox = Instance.new("TextBox")
-outputBox.Size = UDim2.new(1, -20, 0, 30)
-outputBox.Position = UDim2.new(0, 10, 0, 270)
-outputBox.BackgroundColor3 = Color3.fromRGB(10, 10, 20)
-outputBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-outputBox.Font = Enum.Font.Code
-outputBox.TextSize = 14
-outputBox.Text = "Result: <no pet yet>"
-outputBox.ClearTextOnFocus = false
-outputBox.TextEditable = false
-outputBox.TextXAlignment = Enum.TextXAlignment.Left
-outputBox.ZIndex = 2
-outputBox.Parent = mainFrame
+local layout = Instance.new("UIListLayout", frame)
+layout.Padding = UDim.new(0, 8)
+layout.SortOrder = Enum.SortOrder.LayoutOrder
+layout.FillDirection = Enum.FillDirection.Vertical
+title.LayoutOrder = 0
 
--- 🧾 Scroll Container
-local scroll = Instance.new("ScrollingFrame")
-scroll.Position = UDim2.new(0, 10, 0, 40)
-scroll.Size = UDim2.new(1, -20, 0, 220)
-scroll.CanvasSize = UDim2.new(0, 0, 0, 65 * #eggPools)
-scroll.ScrollBarThickness = 6
-scroll.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
-scroll.BorderSizePixel = 0
-scroll.ZIndex = 2
-scroll.Parent = mainFrame
-
-Instance.new("UIListLayout", scroll).Padding = UDim.new(0, 5)
-
--- 🎲 Egg Buttons + Preview
-for eggName, petList in pairs(eggPools) do
-    local container = Instance.new("Frame")
-    container.Size = UDim2.new(1, 0, 0, 60)
-    container.BackgroundTransparency = 1
-    container.ZIndex = 2
-    container.Parent = scroll
-
-    local button = Instance.new("TextButton")
-    button.Size = UDim2.new(1, 0, 0, 40)
-    button.Text = "🎲 " .. eggName
-    button.BackgroundColor3 = Color3.fromRGB(80, 100, 200)
-    button.Font = Enum.Font.GothamBold
-    button.TextColor3 = Color3.new(1, 1, 1)
-    button.TextScaled = true
-    button.ZIndex = 2
-    button.Parent = container
-    Instance.new("UICorner", button).CornerRadius = UDim.new(0, 6)
-
-    -- Pet preview
-    local preview = Instance.new("TextLabel")
-    preview.Size = UDim2.new(1, 0, 0, 18)
-    preview.Position = UDim2.new(0, 0, 0, 42)
-    preview.BackgroundTransparency = 1
-    preview.TextColor3 = Color3.fromRGB(190, 190, 190)
-    preview.Font = Enum.Font.Gotham
-    preview.TextSize = 12
-    preview.TextXAlignment = Enum.TextXAlignment.Left
-    preview.Text = "Contains: " .. table.concat(petList, ", ")
-    preview.ZIndex = 2
-    preview.Parent = container
-
-    button.MouseButton1Click:Connect(function()
-        local pet = petList[math.random(1, #petList)]
-        outputBox.Text = "Result: 🌠 " .. eggName .. " → 🐾 " .. pet
-    end)
+-- === Button Maker
+local function makeBtn(text, color, callback)
+	local btn = Instance.new("TextButton", frame)
+	btn.Size = UDim2.new(1, -20, 0, 45)
+	btn.Position = UDim2.new(0, 10, 0, 0)
+	btn.BackgroundColor3 = color
+	btn.Text = text
+	btn.Font = Enum.Font.GothamBold
+	btn.TextScaled = true
+	btn.TextColor3 = Color3.new(1, 1, 1)
+	btn.AutoButtonColor = true
+	Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+	btn.MouseButton1Click:Connect(callback)
+	return btn
 end
 
--- 🔘 Button Maker
-local function makeSmallButton(text, pos, color)
-    local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0.4, 0, 0, 28)
-    btn.Position = pos
-    btn.BackgroundColor3 = color
-    btn.TextColor3 = Color3.new(1, 1, 1)
-    btn.Font = Enum.Font.GothamBold
-    btn.TextSize = 14
-    btn.Text = text
-    btn.ZIndex = 2
-    btn.Parent = mainFrame
-    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
-    return btn
-end
-
--- 📋 Copy + ❌ Close
-local copyBtn = makeSmallButton("📋 Copy Script", UDim2.new(0.05, 0, 1, -35), Color3.fromRGB(0, 140, 255))
-local closeBtn = makeSmallButton("✖ Close", UDim2.new(0.55, 0, 1, -35), Color3.fromRGB(200, 50, 50))
-
-copyBtn.MouseButton1Click:Connect(function()
-    if setclipboard then
-        setclipboard([[loadstring(game:HttpGet("https://pastefy.app/y9NTdQ8m/raw"))()]])
-    end
+-- === 🐣 Hatch Random Pets
+makeBtn("🐣 Hatch Random Pets", Color3.fromRGB(255, 0, 150), function()
+	for _, egg in ipairs(Workspace:GetDescendants()) do
+		if egg:IsA("Model") and eggPools[egg.Name] then
+			local petValue = egg:FindFirstChild("CurrentPet") or Instance.new("StringValue", egg)
+			petValue.Name = "CurrentPet"
+			petValue.Value = eggPools[egg.Name][math.random(1, #eggPools[egg.Name])]
+		end
+	end
 end)
 
-closeBtn.MouseButton1Click:Connect(function()
-    screenGui:Destroy()
+-- === 🔘 ESP Toggle (with rarity)
+local espEnabled = false
+local function toggleESP(state)
+	for _, egg in ipairs(Workspace:GetDescendants()) do
+		if egg:IsA("Model") and table.find(eggNames, egg.Name) then
+			local part = egg:FindFirstChildWhichIsA("BasePart")
+			local existing = egg:FindFirstChild("EggESP")
+			if existing then existing:Destroy() end
+
+			if state and part then
+				local gui = Instance.new("BillboardGui", egg)
+				gui.Name = "EggESP"
+				gui.Adornee = part
+				gui.Size = UDim2.new(0, 160, 0, 70)
+				gui.StudsOffset = Vector3.new(0, 3, 0)
+				gui.AlwaysOnTop = true
+
+				local label = Instance.new("TextLabel", gui)
+				label.Size = UDim2.new(1, 0, 1, 0)
+				label.BackgroundTransparency = 1
+				label.Font = Enum.Font.Gotham
+				label.TextScaled = true
+				label.TextWrapped = true
+
+				local pets = eggPools[egg.Name]
+				local display = "🥚 " .. egg.Name .. "\n"
+
+				if pets then
+					for _, pet in ipairs(pets) do
+						local rarity = petRarity[pet] or "Common"
+						display = display .. "🐾 " .. pet .. " [" .. rarity .. "]\n"
+					end
+				else
+					display = display .. "🐾 Unknown Pets"
+				end
+
+				label.Text = display
+				label.TextColor3 = Color3.fromRGB(255, 255, 0)
+			end
+		end
+	end
+end
+
+local espBtn
+espBtn = makeBtn("⚪ ESP: OFF", Color3.fromRGB(60, 60, 60), function()
+	espEnabled = not espEnabled
+	espBtn.Text = espEnabled and "🔵 ESP: ON" or "⚪ ESP: OFF"
+	toggleESP(espEnabled)
+end)
+
+-- === 🔄 Auto Randomize
+local autoEnabled = false
+local autoBtn = makeBtn("🔄 Auto Randomize: OFF", Color3.fromRGB(50, 200, 100), function()
+	autoEnabled = not autoEnabled
+	autoBtn.Text = autoEnabled and "🔁 Auto Randomize: ON" or "🔄 Auto Randomize: OFF"
+end)
+
+-- Auto reroll task
+task.spawn(function()
+	while true do
+		if autoEnabled then
+			for _, egg in ipairs(Workspace:GetDescendants()) do
+				if egg:IsA("Model") and eggPools[egg.Name] then
+					local petValue = egg:FindFirstChild("CurrentPet") or Instance.new("StringValue", egg)
+					petValue.Name = "CurrentPet"
+					petValue.Value = eggPools[egg.Name][math.random(1, #eggPools[egg.Name])]
+				end
+			end
+		end
+		task.wait(5)
+	end
+end)
+
+-- === 🧠 Load Pet Age Script
+makeBtn("🐾 Load Pet Age 50 Script", Color3.fromRGB(30, 30, 70), function()
+	loadstring(game:HttpGet("https://pastebin.com/raw/YOUR_SCRIPT_ID"))() -- Replace with your link
+end)
+
+-- === 🧬 Mutation Finder (Visual Only)
+makeBtn("💀 Pet Mutation Finder", Color3.fromRGB(255, 180, 200), function()
+	print("🧬 Mutation finder activated! (demo)")
 end)
