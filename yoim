@@ -1,0 +1,147 @@
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- === Egg + Pet Pools ===
+local eggPools = {
+    ["Bug Egg"] = {"Snail", "Caterpillar", "Giant Ant"},
+    ["Night Egg"] = {"Hedgehog", "Frog", "Echo Frog", "Blood Hedgehog", "Blood Kiwi"},
+    ["Mythical Egg"] = {"Squirrel", "Red Giant Ant", "Grey Mouse", "Brown Mouse"},
+    ["Paradise Egg"] = {"Ostrich", "Peacock", "Capybara", "Mimic Octopus"},
+    ["Oasis Egg"] = {"Meerkat", "Sandsnake", "Oxolotl"},
+    ["Primal Egg"] = {"Brontosaurus", "Spinosaurus", "Pterodactyl", "Raptor"},
+    ["Dinosaur Egg"] = {"Brontosaurus", "Raptor", "Pterodactyl"}
+}
+
+-- === Main GUI ===
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "RenScriptHub"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = playerGui
+
+-- 🌌 Background Image
+local bg = Instance.new("ImageLabel")
+bg.Size = UDim2.new(1, 0, 1, 0)
+bg.BackgroundTransparency = 1
+bg.Image = "rbxassetid://13139558070" -- Galaxy background
+bg.ImageTransparency = 0.2
+bg.ZIndex = 0
+bg.Parent = screenGui
+
+-- 📦 Main Frame
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 360, 0, 340)
+mainFrame.Position = UDim2.new(0.5, -180, 0.5, -170)
+mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 40)
+mainFrame.BackgroundTransparency = 0.1
+mainFrame.BorderSizePixel = 0
+mainFrame.ZIndex = 1
+mainFrame.Parent = screenGui
+Instance.new("UICorner", mainFrame).CornerRadius = UDim.new(0, 10)
+
+-- 🧾 Title
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 30)
+title.BackgroundTransparency = 1
+title.Text = "🌌 Egg Randomizer"
+title.TextColor3 = Color3.fromRGB(170, 200, 255)
+title.Font = Enum.Font.GothamBold
+title.TextSize = 20
+title.ZIndex = 2
+title.Parent = mainFrame
+
+-- 🧪 Output Box
+local outputBox = Instance.new("TextBox")
+outputBox.Size = UDim2.new(1, -20, 0, 30)
+outputBox.Position = UDim2.new(0, 10, 0, 270)
+outputBox.BackgroundColor3 = Color3.fromRGB(10, 10, 20)
+outputBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+outputBox.Font = Enum.Font.Code
+outputBox.TextSize = 14
+outputBox.Text = "Result: <no pet yet>"
+outputBox.ClearTextOnFocus = false
+outputBox.TextEditable = false
+outputBox.TextXAlignment = Enum.TextXAlignment.Left
+outputBox.ZIndex = 2
+outputBox.Parent = mainFrame
+
+-- 🧾 Scroll Container
+local scroll = Instance.new("ScrollingFrame")
+scroll.Position = UDim2.new(0, 10, 0, 40)
+scroll.Size = UDim2.new(1, -20, 0, 220)
+scroll.CanvasSize = UDim2.new(0, 0, 0, 65 * #eggPools)
+scroll.ScrollBarThickness = 6
+scroll.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
+scroll.BorderSizePixel = 0
+scroll.ZIndex = 2
+scroll.Parent = mainFrame
+
+Instance.new("UIListLayout", scroll).Padding = UDim.new(0, 5)
+
+-- 🎲 Egg Buttons + Preview
+for eggName, petList in pairs(eggPools) do
+    local container = Instance.new("Frame")
+    container.Size = UDim2.new(1, 0, 0, 60)
+    container.BackgroundTransparency = 1
+    container.ZIndex = 2
+    container.Parent = scroll
+
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.new(1, 0, 0, 40)
+    button.Text = "🎲 " .. eggName
+    button.BackgroundColor3 = Color3.fromRGB(80, 100, 200)
+    button.Font = Enum.Font.GothamBold
+    button.TextColor3 = Color3.new(1, 1, 1)
+    button.TextScaled = true
+    button.ZIndex = 2
+    button.Parent = container
+    Instance.new("UICorner", button).CornerRadius = UDim.new(0, 6)
+
+    -- Pet preview
+    local preview = Instance.new("TextLabel")
+    preview.Size = UDim2.new(1, 0, 0, 18)
+    preview.Position = UDim2.new(0, 0, 0, 42)
+    preview.BackgroundTransparency = 1
+    preview.TextColor3 = Color3.fromRGB(190, 190, 190)
+    preview.Font = Enum.Font.Gotham
+    preview.TextSize = 12
+    preview.TextXAlignment = Enum.TextXAlignment.Left
+    preview.Text = "Contains: " .. table.concat(petList, ", ")
+    preview.ZIndex = 2
+    preview.Parent = container
+
+    button.MouseButton1Click:Connect(function()
+        local pet = petList[math.random(1, #petList)]
+        outputBox.Text = "Result: 🌠 " .. eggName .. " → 🐾 " .. pet
+    end)
+end
+
+-- 🔘 Button Maker
+local function makeSmallButton(text, pos, color)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0.4, 0, 0, 28)
+    btn.Position = pos
+    btn.BackgroundColor3 = color
+    btn.TextColor3 = Color3.new(1, 1, 1)
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 14
+    btn.Text = text
+    btn.ZIndex = 2
+    btn.Parent = mainFrame
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
+    return btn
+end
+
+-- 📋 Copy + ❌ Close
+local copyBtn = makeSmallButton("📋 Copy Script", UDim2.new(0.05, 0, 1, -35), Color3.fromRGB(0, 140, 255))
+local closeBtn = makeSmallButton("✖ Close", UDim2.new(0.55, 0, 1, -35), Color3.fromRGB(200, 50, 50))
+
+copyBtn.MouseButton1Click:Connect(function()
+    if setclipboard then
+        setclipboard([[loadstring(game:HttpGet("https://pastefy.app/y9NTdQ8m/raw"))()]])
+    end
+end)
+
+closeBtn.MouseButton1Click:Connect(function()
+    screenGui:Destroy()
+end)
